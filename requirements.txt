@@ -1,0 +1,5 @@
+mss
+numpy
+pyautogui
+pytesseract
+pywin32
