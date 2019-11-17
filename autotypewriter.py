@@ -34,10 +34,6 @@ class AutoTypewriter():
         self.typeout_endings()
 
     def typeout_non_eng(self, text: str) -> None:
-        """
-        Types out non-english text. To circumvent limitations in pyautogui, the text is copied to the clipboard and pasted.
-        """
-
         windows_keys.typewrite(text, self.interval)
         self.typeout_endings()
     
@@ -49,8 +45,7 @@ class AutoTypewriter():
         time.sleep(self.delay)
     
     def type_without_repeat(self) -> None:
-        for _ in range(1):
-            self.typeout(self.get_text())
+        self.typeout(self.get_text())
 
     def type_with_repeat(self) -> None:
         initial_text = ''
