@@ -145,7 +145,7 @@ def main():
             "You cannot provide more than one ending keystroke when using the 'press' ending type.")
 
     writer = AutoTypewriter(args.ending_type, args.ending_keystrokes, args.interval, args.delay,
-                            args.lang, args.repeat, args.bypass_anticheat, args.paste, args.paste_token)
+                            args.lang, args.repeat, args.bypass_anticheat, args.paste_token)
 
     writer.do()
 
