@@ -15,7 +15,7 @@ A set of Python utilities to automatically type out text, primarily in typing co
 - Tesseract Open Source OCR trained data for non-Latin OCR
   
 ### For [paste.ee](https://paste.ee) functionality and [10fastfingers.com](https://10fastfingers.com)/[10ff.net](https://10ff.net) integration
-- Chrome, with the [10slowfingers](https://github.com/samuel-gamelin/AutoTypewriter/tree/master/10slowfingers) extension installed
+- A Chromium-based browser, with the [10slowfingers](https://github.com/samuel-gamelin/AutoTypewriter/tree/master/10slowfingers) extension installed
 - A valid application key from [paste.ee](https://paste.ee)
 
 ## Usage
