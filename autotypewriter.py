@@ -143,9 +143,6 @@ def main():
     elif args.ending_type == 'press' and len(args.ending_keystrokes) != 1:
         raise RuntimeError(
             "You cannot provide more than one ending keystroke when using the 'press' ending type.")
-    elif args.paste and not args.paste_token or args.paste_token and not args.paste:
-        raise RuntimeError(
-            'The --paste and --paste-token options accompany each other.')
 
     writer = AutoTypewriter(args.ending_type, args.ending_keystrokes, args.interval, args.delay,
                             args.lang, args.repeat, args.bypass_anticheat, args.paste, args.paste_token)
