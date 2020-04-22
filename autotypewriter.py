@@ -14,7 +14,7 @@ from pyautogui import hotkey, press, typewrite
 
 
 class AutoTypewriter():
-    def __init__(self, ending_type, ending_keystrokes, interval, delay, lang, repeat, bypass_anticheat, paste_ee_method, paste_token):
+    def __init__(self, ending_type, ending_keystrokes, interval, delay, lang, repeat, bypass_anticheat, paste_token):
         self.ending_type = ending_type
         self.ending_keystrokes = ending_keystrokes
         self.interval = interval
@@ -22,7 +22,6 @@ class AutoTypewriter():
         self.lang = lang
         self.repeat = repeat
         self.bypass_anticheat = bypass_anticheat
-        self.paste_ee_method = paste_ee_method
         self.paste_token = paste_token
         self.box = []
         self.sct = mss.mss()
@@ -72,7 +71,7 @@ class AutoTypewriter():
                 break
 
     def do(self):
-        if self.paste_ee_method:
+        if self.paste_token:
             client = PasteEEClient(self.paste_token)
 
             paste_content = client.getLatestPasteContent()
@@ -87,21 +86,22 @@ class AutoTypewriter():
             self.wait_for_mouse_click()
             self.typeout(paste_content)
         else:
-            for _ in range(2):
+            print("Please select the two corners for the bounding box by clicking with your mouse")
+            for i in range(2):
                 while True:
                     state_left = win32api.GetKeyState(0x01)
                     if state_left == -127 or state_left == -128:
                         xclick, yclick = win32api.GetCursorPos()
                         self.box.append(xclick)
                         self.box.append(yclick)
+                        print('Corner ' + (i + 1) +
+                              ' has been set at (' + xclick + ', ' + yclick + ')')
                         break
-
-                time.sleep(0.2)
 
             if platform.system() == 'Windows':
                 pytesseract.pytesseract.tesseract_cmd = "C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
 
-            print("Bounding box has been selected. Will start typing when you click!")
+            print("Bounding box has been selected. Typing will start when you click!")
 
             self.wait_for_mouse_click()
 
@@ -120,22 +120,20 @@ def main():
         description='Command line options for the typewriter')
     parser.add_argument('-t', '--ending-type', type=str, default='press',
                         help="The type of keystroke to perform after typing out a sequence of text. Default is 'press'.")
-    parser.add_argument('-k', '--ending-keystrokes', nargs='+', help="The keystroke(s) to type out, provided as a space-separated list. If one or more keystrokes are provided,\
-        this option must be used in conjunction with an ending type of 'hotkey'. Default is 'space'.", default=['space'])
+    parser.add_argument('-k', '--ending-keystrokes', nargs='+',
+                        help="The keystroke(s) to type out, provided as a space-separated list. If one or more keystrokes are provided, this option must be used in conjunction with an ending type of 'hotkey'. Default is 'space'.", default=['space'])
     parser.add_argument('-d', '--delay', type=float, default=0.0,
                         help='The delay to add after typing out a block of text. Default is 0.0')
     parser.add_argument('-i', '--interval', type=float, default=0.0,
                         help='The interval between each keystroke when typing out text, in seconds. Default is 0.0')
-    parser.add_argument('-l', '--lang', type=str, default='eng', help='The language that is to be used to identify text. Must be provided as a language code specified by Tesseract.\
-        Default: eng')
-    parser.add_argument('--repeat', action='store_true', default=False, help='Specifying this flag will cause the script to keep taking screenshots after writing out a block of text\
-        specified in the bounding box until that text stops changing. Once the text has stopped changing, this would indicate that the typing test is over.')
-    parser.add_argument('-b', '--bypass-anticheat', action='store_true', default=False, help='Specifying this flag will make the typewriter attempt to bypass anticheat mechanisms by\
-        copying the entirety of the displayed text in the bounding box once to the clipboard and pasting it.')
-    parser.add_argument('-p', '--paste', action='store_true', default=False, help='Specifying this flag will make the typewriter use the paste.ee method. A valid paste.ee API key needs\
-        to be provided with --paste-token. Can only be used in conjunction with the accompanying Chrome extension on 10fastfingers.com.')
-    parser.add_argument('--paste-token', type=str,
-                        help='A valid paste.ee API token.')
+    parser.add_argument('-l', '--lang', type=str, default='eng',
+                        help='The language that is to be used to identify text. Must be provided as a language code specified by Tesseract. Default: eng')
+    parser.add_argument('--repeat', action='store_true', default=False,
+                        help='Specifying this flag will cause the script to keep taking screenshots after writing out a block of text specified in the bounding box until that text stops changing. Once the text has stopped changing, this would indicate that the typing test is over.')
+    parser.add_argument('-b', '--bypass-anticheat', action='store_true', default=False,
+                        help='Specifying this flag will make the typewriter attempt to bypass anticheat mechanisms by copying the entirety of the displayed text in the bounding box once to the clipboard and pasting it.')
+    parser.add_argument('-p', '--paste-token', type=str,
+                        help='Specifying this flag will make the typewriter use the paste.ee method. A valid paste.ee API key needs to be provided with this option.')
 
     args = parser.parse_args()
 
@@ -144,7 +142,7 @@ def main():
                            '". Must be one of: ' + ', '.join(ending_types) + '.')
     elif args.ending_type == 'press' and len(args.ending_keystrokes) != 1:
         raise RuntimeError(
-            'You cannot provide more than one keystroke when using the press ending type.')
+            "You cannot provide more than one ending keystroke when using the 'press' ending type.")
     elif args.paste and not args.paste_token or args.paste_token and not args.paste:
         raise RuntimeError(
             'The --paste and --paste-token options accompany each other.')

@@ -1,0 +1,30 @@
+{
+  "name": "10slowfingers",
+  "version": "1.0",
+  "manifest_version": 2,
+  "description": "Type slowly on the 10fastfingers.com or 10ff.net website.",
+  "background": {
+    "persistent": false,
+    "scripts": [
+      "background.js"
+    ]
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.10fastfingers.com/*",
+        "*://*.10ff.net/*"
+      ],
+      "js": [
+        "content.js"
+      ]
+    }
+  ],
+  "browser_action": {
+    "default_title": "10slowfingers"
+  },
+  "permissions": [
+    "activeTab",
+    "storage"
+  ]
+}
