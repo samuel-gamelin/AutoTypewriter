@@ -3,3 +3,4 @@ numpy
 pyautogui
 pytesseract
 pywin32
+requests

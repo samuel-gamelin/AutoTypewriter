@@ -48,6 +48,7 @@ UNICODE_TO_VK = {
     '\n': VK_RETURN,
 }
 
+
 class MOUSEINPUT(ctypes.Structure):
     _fields_ = (('dx', LONG),
                 ('dy', LONG),
@@ -89,6 +90,7 @@ def send_input(*inputs):
     cbSize = ctypes.c_int(ctypes.sizeof(INPUT))
     return ctypes.windll.user32.SendInput(nInputs, pInputs, cbSize)
 
+
 def input_structure(structure):
     if isinstance(structure, MOUSEINPUT):
         return INPUT(INPUT_MOUSE, _INPUTunion(mi=structure))
@@ -98,21 +100,27 @@ def input_structure(structure):
         return INPUT(INPUT_HARDWARE, _INPUTunion(hi=structure))
     raise TypeError('Cannot create INPUT structure!')
 
+
 def keyboard_input_unicode(code, flags=0):
     flags = KEYEVENTF_UNICODE | flags
     return KEYBDINPUT(0, code, flags, 0, None)
 
+
 def keyboard_input_vk(code, flags=0):
     return KEYBDINPUT(code, code, flags, 0, None)
+
 
 def keyboard_event_unicode(code, flags=0):
     return input_structure(keyboard_input_unicode(code))
 
+
 def keyboard_event_vk(code, flags=0):
     return input_structure(keyboard_input_vk(code, flags))
 
+
 def press_vk(code):
     send_input(keyboard_event_vk(code, flags=0))
+
 
 def press(character):
     if character in UNICODE_TO_VK:
@@ -122,6 +130,7 @@ def press(character):
         return
     code = ord(character)
     send_input(keyboard_event_unicode(code))
+
 
 def typewrite(text: str, interval: float) -> None:
     for character in text:
