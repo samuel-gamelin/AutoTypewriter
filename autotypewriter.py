@@ -5,7 +5,6 @@ import numpy
 import os
 import pyperclip
 import pytesseract
-import sys
 import time
 
 from paste import PasteEEClient
