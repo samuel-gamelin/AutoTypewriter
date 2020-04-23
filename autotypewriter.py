@@ -1,55 +1,58 @@
 import argparse
+import keyboard
 import mss
 import numpy
-import platform
+import os
 import pyperclip
 import pytesseract
 import sys
 import time
-import windows_keys
-import win32api
 
 from paste import PasteEEClient
-from pyautogui import hotkey, press, typewrite
+from pynput import mouse
 
 
 class AutoTypewriter():
-    def __init__(self, ending_type, ending_keystrokes, interval, delay, lang, repeat, bypass_anticheat, paste_token):
-        self.ending_type = ending_type
-        self.ending_keystrokes = ending_keystrokes
+    def __init__(self, ending_keystroke, interval, delay, lang, repeat, bypass_anticheat, paste_key):
+        self.ending_keystroke = ending_keystroke
         self.interval = interval
         self.delay = delay
         self.lang = lang
         self.repeat = repeat
         self.bypass_anticheat = bypass_anticheat
-        self.paste_token = paste_token
+        self.paste_key = paste_key
         self.box = []
         self.sct = mss.mss()
-
-        self.typeout = self.typeout_eng if self.lang == 'eng' else self.typeout_non_eng
+        self.in_selection_mode = True
 
     def get_text(self):
+        """Returns the text in this typewriter's bounding box as a string."""
         return pytesseract.image_to_string(numpy.asarray(self.sct.grab(tuple(self.box))), self.lang, config='--psm 6 --oem 3')
 
-    def typeout_eng(self, text):
-        typewrite(text, self.interval)
-        self.typeout_endings()
+    def typeout(self, text):
+        """Types out the specified text."""
+        for character in text:
+            if character == ' ':
+                keyboard.press('space')
+                keyboard.release('space')
+            else:
+                keyboard.write(character)
+            time.sleep(self.interval)
+        self.typeout_ending_keystroke()
 
-    def typeout_non_eng(self, text):
-        windows_keys.typewrite(text, self.interval)
-        self.typeout_endings()
-
-    def typeout_endings(self):
-        if self.ending_type == 'press':
-            press(*self.ending_keystrokes)
-        elif self.ending_type == 'hotkey':
-            hotkey(*self.ending_keystrokes)
+    def typeout_ending_keystroke(self):
+        """Types out this typewriter's ending keystroke."""
+        keyboard.press(self.ending_keystroke)
+        keyboard.release(self.ending_keystroke)
         time.sleep(self.delay)
 
     def type_without_repeat(self):
+        """Types out the text in this typewriter's bounding box only once, without taking any further screenshots."""
         self.typeout(self.get_text())
 
     def type_with_repeat(self):
+        """Types out the text in this typewriter's bounding box, taking screenshots after this typerwriter's specified delay
+        and typing out the text within that screenshot, repeating until the text no longer changes."""
         initial_text = ''
         while True:
             text = self.get_text()
@@ -59,21 +62,36 @@ class AutoTypewriter():
             initial_text = text
 
     def copy_and_paste_text(self):
+        """Copies the text in this typewriter's bounding box to the clipboard and pastes it."""
         text = self.get_text()
         pyperclip.copy(text)
-        hotkey("ctrl", "v")
-        self.typeout_endings()
+        keyboard.press("ctrl+v")
+        keyboard.release("ctrl+v")
+        self.typeout_ending_keystroke()
+
+    def on_click_handler(self, x, y, button, pressed):
+        """"An on click handler for the selection of the bounding box."""
+        if self.in_selection_mode and pressed:
+            self.box.append(x)
+            self.box.append(y)
+            print('Corner ' + str(int(len(self.box) / 2)) +
+                  ' has been set at (' + str(x) + ', ' + str(y) + ')')
+        if len(self.box) == 4:
+            return False
 
     def wait_for_mouse_click(self):
-        while True:
-            state_left = win32api.GetKeyState(0x01)
-            if state_left == -127 or state_left == -128:
-                break
+        """Pauses the execution of the program until a mouse click is received."""
+        def on_click(x, y, button, pressed):
+            if pressed:
+                return False
+
+        with mouse.Listener(on_click=on_click) as listener:
+            listener.join()
 
     def do(self):
-        if self.paste_token:
-            client = PasteEEClient(self.paste_token)
-
+        if self.paste_key:
+            self.in_selection_mode = False
+            client = PasteEEClient(self.paste_key)
             paste_content = client.getLatestPasteContent()
 
             while not paste_content:
@@ -86,22 +104,20 @@ class AutoTypewriter():
             self.wait_for_mouse_click()
             self.typeout(paste_content)
         else:
-            print("Please select the two corners for the bounding box by clicking with your mouse")
-            for i in range(2):
-                while True:
-                    state_left = win32api.GetKeyState(0x01)
-                    if state_left == -127 or state_left == -128:
-                        xclick, yclick = win32api.GetCursorPos()
-                        self.box.append(xclick)
-                        self.box.append(yclick)
-                        print('Corner ' + (i + 1) +
-                              ' has been set at (' + xclick + ', ' + yclick + ')')
-                        break
+            print(
+                "Please select the two corners for the bounding box by clicking with your mouse")
 
-            if platform.system() == 'Windows':
-                pytesseract.pytesseract.tesseract_cmd = "C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
+            try:
+                pytesseract.pytesseract.tesseract_cmd = os.environ["TESSERACT_PATH"]
+            except KeyError:
+                raise RuntimeError(
+                    "The environment variable TESSERACT_PATH is not defined!")
 
-            print("Bounding box has been selected. Typing will start when you click!")
+            with mouse.Listener(on_click=self.on_click_handler) as listener:
+                listener.join()
+
+            print(
+                "Bounding box has been selected. Typing will start right after you click!")
 
             self.wait_for_mouse_click()
 
@@ -114,38 +130,29 @@ class AutoTypewriter():
 
 
 def main():
-    ending_types = ['press', 'hotkey']
-
     parser = argparse.ArgumentParser(
         description='Command line options for the typewriter')
-    parser.add_argument('-t', '--ending-type', type=str, default='press',
-                        help="The type of keystroke to perform after typing out a sequence of text. Default is 'press'.")
-    parser.add_argument('-k', '--ending-keystrokes', nargs='+',
-                        help="The keystroke(s) to type out, provided as a space-separated list. If one or more keystrokes are provided, this option must be used in conjunction with an ending type of 'hotkey'. Default is 'space'.", default=['space'])
+    parser.add_argument('-k', '--ending-keystroke', type=str, default='space',
+                        help="The keystroke to type out after typing out a block of text, provided as a string. Examples: 'shift+tab', 'ctrl+v', 'tab'. Default is 'space'.")
     parser.add_argument('-d', '--delay', type=float, default=0.0,
                         help='The delay to add after typing out a block of text. Default is 0.0')
     parser.add_argument('-i', '--interval', type=float, default=0.0,
                         help='The interval between each keystroke when typing out text, in seconds. Default is 0.0')
     parser.add_argument('-l', '--lang', type=str, default='eng',
                         help='The language that is to be used to identify text. Must be provided as a language code specified by Tesseract. Default: eng')
-    parser.add_argument('--repeat', action='store_true', default=False,
-                        help='Specifying this flag will cause the script to keep taking screenshots after writing out a block of text specified in the bounding box until that text stops changing. Once the text has stopped changing, this would indicate that the typing test is over.')
+    parser.add_argument('-r', '--repeat', action='store_true', default=False,
+                        help='Specifying this flag will cause the script to keep taking screenshots after writing out a block of text specified in the bounding box until that text stops changing. Once the text has stopped changing,\
+                            this would indicate that the typing test is over.')
     parser.add_argument('-b', '--bypass-anticheat', action='store_true', default=False,
-                        help='Specifying this flag will make the typewriter attempt to bypass anticheat mechanisms by copying the entirety of the displayed text in the bounding box once to the clipboard and pasting it.')
-    parser.add_argument('-p', '--paste-token', type=str,
-                        help='Specifying this flag will make the typewriter use the paste.ee method. A valid paste.ee API key needs to be provided with this option.')
+                        help='Specifying this flag will make the typewriter attempt to bypass anticheat mechanisms on 10fastfingers.com by copying the entirety of the displayed text in the bounding box once to the clipboard and pasting it.')
+    parser.add_argument('-p', '--paste-key', type=str,
+                        help='Specifying this flag will make the typewriter use the paste.ee method, which drastically improves permances as it reduces the overhead of grabbing screenshots and performing OCR. Note: A valid paste.ee application\
+                            key needs to be provided with this option.')
 
     args = parser.parse_args()
 
-    if args.ending_type not in ending_types:
-        raise RuntimeError('Invalid ending type "' + args.ending_type +
-                           '". Must be one of: ' + ', '.join(ending_types) + '.')
-    elif args.ending_type == 'press' and len(args.ending_keystrokes) != 1:
-        raise RuntimeError(
-            "You cannot provide more than one ending keystroke when using the 'press' ending type.")
-
-    writer = AutoTypewriter(args.ending_type, args.ending_keystrokes, args.interval, args.delay,
-                            args.lang, args.repeat, args.bypass_anticheat, args.paste_token)
+    writer = AutoTypewriter(args.ending_keystroke, args.interval, args.delay,
+                            args.lang, args.repeat, args.bypass_anticheat, args.paste_key)
 
     writer.do()
 

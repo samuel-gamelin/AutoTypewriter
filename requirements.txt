@@ -1,6 +1,7 @@
+keyboard
 mss
 numpy
-pyautogui
+pynput
+pyperclip
 pytesseract
-pywin32
 requests

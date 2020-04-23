@@ -6,13 +6,13 @@ A set of Python utilities to automatically type out text, primarily in typing co
 
 ### General
 - Python 3
-- Windows
 
 ### For OCR capabilities
 - Tesseract Open Source OCR
   - [Windows installers](https://github.com/UB-Mannheim/tesseract/wiki)
-  - [Installers for other platforms](https://github.com/tesseract-ocr/tesseract/wiki#installation) - Currently unsupported
+  - [Installers for other platforms](https://github.com/tesseract-ocr/tesseract/wiki#installation)
 - Tesseract Open Source OCR trained data for non-Latin OCR
+- Environment variable TESSERACT_PATH set to point to the Tesseract OCR executable
   
 ### For [paste.ee](https://paste.ee) functionality and [10fastfingers.com](https://10fastfingers.com)/[10ff.net](https://10ff.net) integration
 - A Chromium-based browser, with the [10slowfingers](https://github.com/samuel-gamelin/AutoTypewriter/tree/master/10slowfingers) extension installed
@@ -38,9 +38,9 @@ A set of Python utilities to automatically type out text, primarily in typing co
     ```
     Run the typewriter using OCR capabilities with Vietnamese trained language data, making it take a single screenshot of the selected bounding box and typing out its contents (with a 0.08s interval between each character) followed by entering the Tab+Enter hotkey.
     ```
-    python3 autotypewriter.py --interval 0.08 --lang vie --ending-type hotkey --ending-keystrokes Tab Enter
+    python3 autotypewriter.py --interval 0.08 --ending-keystrokes 'tab+enter' --lang vie
     ```
     Run the typewriter using paste.ee integration with a 0.08s interval between each character being typed out. Once the script has loaded the contents of your latest paste, which you would have submitted using the 10slowfingers Chrome extension, a message is sent to standard output and typing will begin when you perform a click.
     ```
-    python3 autotypewriter.py --paste-token <your paste.ee application key> --interval 0.08
+    python3 autotypewriter.py --paste-key <your paste.ee application key> --interval 0.08
     ```
