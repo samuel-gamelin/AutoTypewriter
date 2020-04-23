@@ -6,6 +6,7 @@ A set of Python utilities to automatically type out text, primarily in typing co
 
 ### General
 - Python 3
+- Windows or macOS
 
 ### For OCR capabilities
 - Tesseract Open Source OCR
