@@ -23,7 +23,6 @@ class AutoTypewriter():
         self.paste_key = paste_key
         self.box = []
         self.sct = mss.mss()
-        self.in_selection_mode = True
 
     def get_text(self):
         """Returns the text in this typewriter's bounding box as a string."""
@@ -71,7 +70,7 @@ class AutoTypewriter():
 
     def on_click_handler(self, x, y, button, pressed):
         """"An on click handler for the selection of the bounding box."""
-        if self.in_selection_mode and pressed:
+        if pressed:
             self.box.append(x)
             self.box.append(y)
             print('Corner ' + str(int(len(self.box) / 2)) +
@@ -90,7 +89,6 @@ class AutoTypewriter():
 
     def do(self):
         if self.paste_key:
-            self.in_selection_mode = False
             client = PasteEEClient(self.paste_key)
             paste_content = client.getLatestPasteContent()
 
