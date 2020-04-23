@@ -44,3 +44,5 @@ A set of Python utilities to automatically type out text, primarily in typing co
     ```
     python3 autotypewriter.py --paste-key <your paste.ee application key> --interval 0.08
     ```
+## Known Limitations
+It straight up doesn't work on Linux.
