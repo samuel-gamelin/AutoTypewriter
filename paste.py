@@ -7,6 +7,8 @@ class PasteEEClient():
         self.access_token = access_token
 
     def getLatestPasteContent(self):
+        """Returns the content of the latest paste as a string. Should there be any kind of error, an empty string is returned."""
+
         headers = {
             "X-Auth-Token": self.access_token
         }
