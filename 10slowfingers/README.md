@@ -9,7 +9,7 @@ When on the [10fastfingers.com](https://10fastfingers.com) or [10ff.net](https:/
 
 <img width="240" alt="Screen Shot 2020-04-25 at 11 53 45 AM" src="https://user-images.githubusercontent.com/13603771/80284296-ae6c6f80-86eb-11ea-97e0-bd213c595c73.png">
 
-When you click this for the first time you'll be prompted to enter a [paste.ee](https://paste.ee) application key. Subsequent requests will not prompt you for a key. At this point the contents of the typying test will be uploaded as a paste if they can be found and an appropriate message will be output in the browser's console:
+When you click this for the first time you'll be prompted to enter a [paste.ee](https://paste.ee) application key. Subsequent requests will not prompt you for a key. At this point the contents of the typing test will be uploaded as a paste if they can be found and an appropriate message will be output in the browser's console:
 
 On success:
 
